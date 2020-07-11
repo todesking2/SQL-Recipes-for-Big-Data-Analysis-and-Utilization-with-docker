@@ -1,0 +1,109 @@
+version: "3"
+
+
+
+services:
+
+  postgres:
+
+    container_name: sql_lesson_postgres_container
+
+    restart: always
+
+    image: postgres:latest
+
+    networks:
+
+      ds_net:
+
+        ipv4_address: 172.28.1.2
+
+    environment:
+
+      # POSTGRES_DB: mydb
+
+      POSTGRES_USER: postgres
+
+      POSTGRES_PASSWORD: postgres
+
+      TZ: Asia/Tokyo
+
+    ports:
+
+      - 5432:5432
+
+    volumes:
+
+      - ./init_data:/docker-entrypoint-initdb.d/
+
+      #- ./db:/var/lib/postgresql/data
+
+  pgAdmin:
+
+    container_name: sql_lesson_pgAdmin_container
+
+    image: dpage/pgadmin4
+
+    networks:
+
+      ds_net:
+
+        ipv4_address: 172.28.1.3
+
+    restart: always
+
+    ports:
+
+      # - "8000:80"
+
+      - "80:80"
+
+    environment:
+
+      PGADMIN_DEFAULT_EMAIL: pgadmin
+
+      PGADMIN_DEFAULT_PASSWORD: pgadmin
+
+      TZ: Asia/Tokyo
+
+    volumes:
+
+      - ./../db_config:/root/.pgadmin
+
+      
+
+  pgweb:
+
+    container_name: sql_lesson_pgweb_container
+
+    restart: always
+
+    image: sosedoff/pgweb
+
+    networks:
+
+      ds_net:
+
+        ipv4_address: 172.28.1.5
+
+    ports:
+
+      - "8081:8081"
+
+    environment:
+
+      - DATABASE_URL=postgres://postgres:postgres@172.28.1.2:5432/postgres?sslmode=disable
+
+      # - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
+
+networks:
+
+  ds_net:
+
+    ipam:
+
+      driver: default
+
+      config:
+
+        - subnet: 172.28.0.0/16
